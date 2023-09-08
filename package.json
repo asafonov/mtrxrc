@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@matrix-org/olm": "^3.2.15",
+    "matrix-js-sdk": "^28.0.0"
+  }
+}
