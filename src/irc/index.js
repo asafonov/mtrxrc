@@ -1,4 +1,3 @@
-const input = require('input')
 const config = require('../config').init()
 const net = require('net')
 let callbacks
@@ -6,25 +5,35 @@ let clients = {}
 let rooms = {}
 const isAuthorized = socket => clients[socket].pass === config.get('password') && clients[socket].nick === config.get('login')
 
-const initSettings = async () => {
+const initSettings = f => {
   let login = config.get('login')
   let password = config.get('password')
   let port = config.get('port')
   let host = config.get('host')
 
   if (! login) {
-    login = await input.text('IRC login: ')
-    password = await input.text('IRC password: ')
-    port = parseInt(await input.text('IRC port: '))
-    host = await input.text('IRC host: ')
-    config.set('login', login)
-    config.set('password', password)
-    config.set('port', port)
-    config.set('host', host)
-    config.save()
+    const readline = require('readline').createInterface({
+      input: process.stdin,
+      output: process.stdout
+    })
+    readline.question('IRC login: ', login => {
+      config.set('login', login)
+      readline.question('IRC password: ', password => {
+        config.set('password', password)
+        readline.question('IRC port: ', port => {
+          config.set('port', port)
+          readline.question('IRC host: ', host => {
+            config.set('host', host)
+            config.save()
+            readline.close()
+            return f()
+          })
+        })
+      })
+    })
+  } else {
+    f()
   }
-
-  return [login, password, host, port]
 }
 
 const welcome = socket => {
@@ -119,13 +128,12 @@ const initServer = () => {
   const port = config.get('port')
   const server = net.createServer(listener)
   server.listen(port, host)
-  console.log(`tgirc started on ${host}:${port}`)
+  console.log(`mtrx started on ${host}:${port}`)
 }
 
 const init = async _callbacks => {
   callbacks = _callbacks
-  const [login, password, host, port] = await initSettings()
-  initServer()
+  initSettings(initServer)
 }
 
 module.exports = {
