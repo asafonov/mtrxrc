@@ -1,11 +1,11 @@
 const data = {}
 
 const init = name => {
-  if (! name) name = process.argv[2] || 'tgirc'
+  if (! name) name = process.argv[2] || 'mtrxrc'
   if (data[name]) return data[name]
 
   const fs = require('fs')
-  const dirName = `${process.env.HOME}/.config/tgirc`
+  const dirName = `${process.env.HOME}/.config/mtrxrc`
 
   try {
     fs.mkdirSync(dirName, {recursive: true})

@@ -1,3 +1,4 @@
+global.Olm = require('@matrix-org/olm')
 const sdk = require("matrix-js-sdk")
 const config = require('../config').init()
 
@@ -34,7 +35,8 @@ const genConfigData = (user, host) => {
 const getConnectData = data => {
   const initialData = {
     baseUrl: config.get('baseUrl'),
-    userId: config.get('userId')
+    userId: config.get('userId'),
+    deviceId: 'mtrxrc'
   }
   return {...initialData, ...data}
 }
@@ -60,14 +62,15 @@ const login = async f => {
   } else {
     matrix = sdk.createClient(
       getConnectData({
-        accessToken: accessToken,
+        accessToken: accessToken
       })
     )
     f(matrix)
   }
 }
 
-const subscribe = (matrix, onMessage) => {
+const subscribe = async (matrix, onMessage) => {
+  await matrix.initCrypto()
   matrix.startClient()
   const userId = config.get('userId')
 
@@ -110,7 +113,7 @@ const subscribe = (matrix, onMessage) => {
   })
 }
 
-const init = {onMessage} => {
+const init = ({onMessage}) => {
   login(matrix => subscribe(matrix, onMessage))
 }
 

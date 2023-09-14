@@ -131,9 +131,12 @@ const initServer = () => {
   console.log(`mtrx started on ${host}:${port}`)
 }
 
-const init = async _callbacks => {
+const init = (_callbacks, f) => {
   callbacks = _callbacks
-  initSettings(initServer)
+  initSettings(() => {
+    initServer()
+    f()
+  })
 }
 
 module.exports = {
