@@ -36,7 +36,7 @@ const getConnectData = data => {
   const initialData = {
     baseUrl: config.get('baseUrl'),
     userId: config.get('userId'),
-    deviceId: 'mtrxrc'
+    deviceId: config.get('deviceId')
   }
   return {...initialData, ...data}
 }
@@ -55,6 +55,7 @@ const login = async f => {
         config.set('accessToken', accessToken)
         config.set('baseUrl', data.baseUrl)
         config.set('userId', data.userId)
+        config.set('deviceId', `mtrxrc${new Date().getTime()}`)
         config.save()
         f(matrix)
       }
@@ -99,18 +100,12 @@ const subscribe = async (matrix, onMessage) => {
       return
     }
 
-    if (! antispam.isAllowedMessage(event.sender.userId, event.getRoomId())) {
-      console.log('SPAM', event.sender.userId, event.getRoomId())
-      const antispamErrorMessage = 'Sorry, the administrator of the bot did not allow me to react to your messages'
-      matrix.sendEvent(room.roomId, 'm.room.message', {msgtype: 'm.text', body: antispamErrorMessage}, '')
-      return
-    }
-
-    for (let i = 0; i < plugins.length; ++i) {
-      const reply = await plugins[i].onMessage(event.getContent().body, event.getRoomId())
-      reply && matrix.sendEvent(room.roomId, 'm.room.message', {msgtype: 'm.text', body: reply}, '')
-    }
+    onMessage(event.sender.userId, event.getContent().body, room.roomId)
   })
+}
+
+const sendMessage = (roomId, msg) => {
+  matrix.sendEvent(roomId, 'm.room.message', {msgtype: 'm.text', body: msg}, '')
 }
 
 const init = ({onMessage}) => {
