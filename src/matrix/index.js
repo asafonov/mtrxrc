@@ -1,6 +1,8 @@
 global.Olm = require('@matrix-org/olm')
 const sdk = require("matrix-js-sdk")
 const config = require('../config').init()
+const { LocalStorage } = require('node-localstorage')
+const localStorage = new LocalStorage(`${config.getDir()}/storage`)
 
 const showLoginForm = f => {
   const readline = require('readline').createInterface({
@@ -36,7 +38,8 @@ const getConnectData = data => {
   const initialData = {
     baseUrl: config.get('baseUrl'),
     userId: config.get('userId'),
-    deviceId: config.get('deviceId')
+    deviceId: config.get('deviceId'),
+    cryptoStore: new sdk.LocalStorageCryptoStore(localStorage)
   }
   return {...initialData, ...data}
 }

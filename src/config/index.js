@@ -5,7 +5,10 @@ const init = name => {
   if (data[name]) return data[name]
 
   const fs = require('fs')
-  const dirName = `${process.env.HOME}/.config/mtrxrc`
+  const getConfigDir = () => {
+    return `${process.env.HOME}/.config/mtrxrc`
+  }
+  const dirName = getConfigDir()
 
   try {
     fs.mkdirSync(dirName, {recursive: true})
@@ -35,7 +38,7 @@ const init = name => {
     config = {}
   }
 
-  data[name] = {get: get, set: set, unset: unset, join: join, save: save}
+  data[name] = {get: get, set: set, unset: unset, join: join, save: save, getDir: getConfigDir}
   return data[name]
 }
 
