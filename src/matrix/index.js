@@ -75,8 +75,13 @@ const login = async f => {
 
 const subscribe = async (matrix, onMessage) => {
   await matrix.initCrypto()
-  matrix.startClient()
+  matrix.startClient({initialSyncLimit: 1})
   const userId = config.get('userId')
+
+  matrix.on('sync', state => {
+    if (state !== 'PREPARED') return
+    matrix.setGlobalErrorOnUnknownDevices(false)
+  })
 
   matrix.on('RoomMember.membership', (event, member) => {
     if (member.membership === 'invite' && member.userId === userId) {
@@ -88,8 +93,9 @@ const subscribe = async (matrix, onMessage) => {
     if (toStartOfTimeline) {
       return
     }
+    console.log('EVT', event.getType())
 
-    if (event.getType() !== 'm.room.message') {
+    if (event.getType() !== 'm.room.message' || event.getType() !== 'm.room.encrypted') {
       return
     }
 
