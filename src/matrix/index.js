@@ -30,7 +30,8 @@ const getAccessToken = async (userId, password, matrix) => {
 const genConfigData = (user, host) => {
   return {
     baseUrl: `https://${host}`,
-    userId: `@${user}:${host}`
+    userId: `@${user}:${host}`,
+    deviceId: `mtrxrc${new Date().getTime()}`
   }
 }
 
@@ -58,7 +59,7 @@ const login = async f => {
         config.set('accessToken', accessToken)
         config.set('baseUrl', data.baseUrl)
         config.set('userId', data.userId)
-        config.set('deviceId', `mtrxrc${new Date().getTime()}`)
+        config.set('deviceId', data.deviceId)
         config.save()
         f(matrix)
       }
