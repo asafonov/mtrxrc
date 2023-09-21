@@ -27,11 +27,22 @@ const getAccessToken = async (userId, password, matrix) => {
   return response.access_token
 }
 
+const getDeviceId = () => {
+  const allowedSymbols = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  let r = ''
+
+  for (let i = 0; i < 10; ++i) {
+    r += allowedSymbols[Math.floor(Math.random() * allowedSymbols.length)]
+  }
+
+  return r
+}
+
 const genConfigData = (user, host) => {
   return {
     baseUrl: `https://${host}`,
     userId: `@${user}:${host}`,
-    deviceId: `mtrxrc${new Date().getTime()}`
+    deviceId: getDeviceId()
   }
 }
 
@@ -94,9 +105,10 @@ const subscribe = async (matrix, onMessage) => {
     if (toStartOfTimeline) {
       return
     }
-    console.log('EVT', event.getType())
 
-    if (event.getType() !== 'm.room.message' || event.getType() !== 'm.room.encrypted') {
+    const eventType = event.getType()
+
+    if (eventType !== 'm.room.message' && eventType !== 'm.room.encrypted') {
       return
     }
 
