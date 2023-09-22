@@ -3,6 +3,7 @@ const sdk = require("matrix-js-sdk")
 const config = require('../config').init()
 const { LocalStorage } = require('node-localstorage')
 const localStorage = new LocalStorage(`${config.getDir()}/storage`)
+let matrix
 
 const showLoginForm = f => {
   const readline = require('readline').createInterface({
@@ -58,7 +59,6 @@ const getConnectData = data => {
 
 const login = async f => {
   let accessToken = config.get('accessToken')
-  let matrix
 
   if (! accessToken) {
     showLoginForm(async (host, user, password) => {
@@ -84,6 +84,10 @@ const login = async f => {
     f(matrix)
   }
 }
+
+const improveSender = sender => sender.substring(1).replace(/\:.+/g, '')
+const improveRoom = room => room && '#' + room.replace(/\:/g, '_')
+const revertRoom = room => room && room.replace(/_/g, ':')
 
 const subscribe = async (matrix, onMessage) => {
   await matrix.initCrypto()
@@ -122,7 +126,8 @@ const subscribe = async (matrix, onMessage) => {
       return
     }
 
-    onMessage(event.sender.userId, event.getContent().body, room.roomId)
+    const sender = improveSender(event.sender.userId)
+    onMessage(sender, event.getContent().body, improveRoom(room.roomId))
   })
 
   matrix.on('Event.decrypted', async event => {
@@ -136,12 +141,13 @@ const subscribe = async (matrix, onMessage) => {
       return
     }
 
-    onMessage(event.event.sender, event.clearEvent.content.body, event.event.room_id)
+    const sender = improveSender(event.event.sender)
+    onMessage(sender, event.clearEvent.content.body, improveRoom(event.event.room_id))
   })
 }
 
 const sendMessage = (roomId, msg) => {
-  matrix.sendEvent(roomId, 'm.room.message', {msgtype: 'm.text', body: msg}, '')
+  matrix.sendEvent(revertRoom(roomId), 'm.room.message', {msgtype: 'm.text', body: msg}, '')
 }
 
 const init = ({onMessage}) => {
@@ -149,5 +155,6 @@ const init = ({onMessage}) => {
 }
 
 module.exports = {
-  init: init
+  init: init,
+  sendMessage: sendMessage
 }
