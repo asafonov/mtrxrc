@@ -84,6 +84,7 @@ const sendToClients = command => {
 }
 
 const sendMessage = (from, msg, chat) => {
+  if (! msg) return
   const messages = msg.split('\n')
 
   if (chat && ! rooms[chat]) {

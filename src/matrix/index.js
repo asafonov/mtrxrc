@@ -108,7 +108,7 @@ const subscribe = async (matrix, onMessage) => {
 
     const eventType = event.getType()
 
-    if (eventType !== 'm.room.message' && eventType !== 'm.room.encrypted') {
+    if (eventType !== 'm.room.message') {
       return
     }
 
@@ -123,6 +123,20 @@ const subscribe = async (matrix, onMessage) => {
     }
 
     onMessage(event.sender.userId, event.getContent().body, room.roomId)
+  })
+
+  matrix.on('Event.decrypted', async event => {
+    if (event.event.sender === userId) {
+      return
+    }
+
+    const age = new Date().getTime() - event.event.localTimestamp
+
+    if (age > 60000) {
+      return
+    }
+
+    onMessage(event.event.sender, event.clearEvent.content.body, event.event.room_id)
   })
 }
 
