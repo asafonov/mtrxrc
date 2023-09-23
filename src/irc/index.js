@@ -37,7 +37,7 @@ const initSettings = f => {
 }
 
 const welcome = socket => {
-  clients[socket].socket.write(`375 ${clients[socket].nick} :- Welcome to tgirc\n`)
+  clients[socket].socket.write(`375 ${clients[socket].nick} :- Welcome to mtrxrc\n`)
 }
 
 const commands = {
