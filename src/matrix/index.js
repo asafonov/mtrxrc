@@ -1,5 +1,6 @@
 global.Olm = require('@matrix-org/olm')
-const sdk = require("matrix-js-sdk")
+const sdk = require('matrix-js-sdk')
+const fs = require('fs')
 const config = require('../config').init()
 const { LocalStorage } = require('node-localstorage')
 const localStorage = new LocalStorage(`${config.getDir()}/storage`)
@@ -146,8 +147,25 @@ const subscribe = async (matrix, onMessage) => {
   })
 }
 
-const sendMessage = (roomId, msg) => {
-  matrix.sendEvent(revertRoom(roomId), 'm.room.message', {msgtype: 'm.text', body: msg}, '')
+const sendMessage = async (roomId, msg) => {
+  const room = revertRoom(roomId)
+
+  if (msg.substr(0, 6) === 'upload') {
+    const filename = msg.substr(7)
+    const stream = fs.createReadStream(filename)
+    const url = await matrix.uploadContent({
+      stream: stream,
+      name: filename
+    })
+    const content = {
+      msgtype: 'm.file',
+      body: filename,
+      url: JSON.parse(url).content_uri
+    }
+    matrix.sendMessage(room, content)
+  } else {
+    matrix.sendEvent(room, 'm.room.message', {msgtype: 'm.text', body: msg}, '')
+  }
 }
 
 const init = ({onMessage}) => {
