@@ -158,9 +158,8 @@ const sendMessage = async (roomId, msg) => {
       name: filename
     })
     const content = {
-      msgtype: 'm.file',
-      body: filename,
-      url: JSON.parse(url).content_uri
+      msgtype: 'm.image',
+      url: url.content_uri
     }
     matrix.sendMessage(room, content)
   } else {
